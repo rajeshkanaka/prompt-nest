@@ -17,7 +17,7 @@
 
 :root {
   /* Ocean-inspired color palette */
-  --background: oklch(0.951 0.020 258.27); /* Ocean Mist */
+  --background: oklch(0.965 0.003 0); /* Faint Gray */
   --foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
   
   --card: oklch(0.986 0.003 258.27); /* Pearl White */
