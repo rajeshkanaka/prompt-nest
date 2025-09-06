@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator'
 import { Plus, Pencil, X, Search, Sparkles, Copy, Tag, Filter, Check } from '@phosphor-icons/react'
 import { toast, Toaster } from 'sonner'
+import nestLogo from '@/assets/images/nest-logo.svg'
 
 interface Prompt {
   id: string
@@ -308,9 +309,12 @@ function App() {
         }}
       />
       {/* Wave-inspired header */}
-      <header className="wave-header p-6">
+      <header className="shimmer-black-header p-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-pearl-white">Prompt Library</h1>
+          <div className="flex items-center gap-3">
+            <img src={nestLogo} alt="Prompt Nest Logo" className="w-10 h-8" />
+            <h1 className="nestley-font text-2xl sm:text-3xl font-semibold text-pearl-white">Prompt Nest</h1>
+          </div>
           <Button 
             onClick={enhancePrompts}
             variant="outline" 
@@ -431,13 +435,13 @@ function App() {
             <h3 className="text-xl font-medium text-foreground mb-2">
               {searchQuery || selectedCategory !== 'all' || selectedTags.length > 0 
                 ? 'No prompts found' 
-                : 'Start your prompt collection'
+                : 'Start your prompt nest'
               }
             </h3>
             <p className="text-muted-foreground">
               {searchQuery || selectedCategory !== 'all' || selectedTags.length > 0
                 ? 'Try adjusting your search terms or filters' 
-                : 'Add your first prompt to get started'
+                : 'Add your first prompt to your nest to get started'
               }
             </p>
           </div>

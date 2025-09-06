@@ -9,6 +9,10 @@
   body {
     font-family: 'Inter', sans-serif;
   }
+  
+  .nestley-font {
+    font-family: 'Playfair Display', serif;
+  }
 }
 
 :root {
@@ -90,9 +94,46 @@
   --radius-full: 9999px;
 }
 
-/* Wave-inspired header gradient */
-.wave-header {
-  background: linear-gradient(135deg, var(--aqua-current) 0%, var(--deep-sea) 100%);
+/* Shimmering black header gradient */
+.shimmer-black-header {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 25%, #333333 50%, #1a1a1a 75%, #000000 100%);
+  background-size: 400% 400%;
+  animation: shimmerBlack 3s ease-in-out infinite;
+  position: relative;
+}
+
+.shimmer-black-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmerSlide 2s infinite;
+}
+
+@keyframes shimmerBlack {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Floating ripple animation for FAB */
@@ -196,11 +237,11 @@
 
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
-  .wave-header {
+  .shimmer-black-header {
     padding: 1rem;
   }
   
-  .wave-header h1 {
+  .shimmer-black-header h1 {
     font-size: 1.5rem;
   }
   
