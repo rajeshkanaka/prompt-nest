@@ -1,1 +1,215 @@
-/* This is where custom CSS goes */
+@import 'tailwindcss';
+@import "tw-animate-css";
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+:root {
+  /* Ocean-inspired color palette */
+  --background: oklch(0.951 0.020 258.27); /* Ocean Mist */
+  --foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  
+  --card: oklch(0.986 0.003 258.27); /* Pearl White */
+  --card-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  
+  --popover: oklch(0.986 0.003 258.27); /* Pearl White */
+  --popover-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  
+  --primary: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  --primary-foreground: oklch(0.986 0.003 258.27); /* Pearl White */
+  
+  --secondary: oklch(0.821 0.048 258.27); /* Seafoam */
+  --secondary-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  
+  --muted: oklch(0.951 0.020 258.27); /* Ocean Mist */
+  --muted-foreground: oklch(0.621 0.096 258.27); /* Aqua Current */
+  
+  --accent: oklch(0.821 0.048 258.27); /* Seafoam */
+  --accent-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
+  
+  --destructive: oklch(0.704 0.191 22.216); /* Muted Coral */
+  --destructive-foreground: oklch(0.986 0.003 258.27); /* Pearl White */
+  
+  --border: oklch(0.821 0.048 258.27); /* Seafoam */
+  --input: oklch(0.821 0.048 258.27); /* Seafoam */
+  --ring: oklch(0.621 0.096 258.27); /* Aqua Current */
+  
+  --radius: 1rem; /* Smooth sea stone corners */
+  
+  /* Custom ocean colors */
+  --ocean-mist: oklch(0.951 0.020 258.27);
+  --deep-sea: oklch(0.295 0.132 258.27);
+  --aqua-current: oklch(0.621 0.096 258.27);
+  --seafoam: oklch(0.821 0.048 258.27);
+  --pearl-white: oklch(0.986 0.003 258.27);
+  --silver: oklch(0.758 0.016 258.27);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  /* Custom ocean colors */
+  --color-ocean-mist: var(--ocean-mist);
+  --color-deep-sea: var(--deep-sea);
+  --color-aqua-current: var(--aqua-current);
+  --color-seafoam: var(--seafoam);
+  --color-pearl-white: var(--pearl-white);
+  --color-silver: var(--silver);
+  
+  /* Radius system */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  --radius-full: 9999px;
+}
+
+/* Wave-inspired header gradient */
+.wave-header {
+  background: linear-gradient(135deg, var(--aqua-current) 0%, var(--deep-sea) 100%);
+}
+
+/* Floating ripple animation for FAB */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple-effect:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Gentle card hover effects */
+.prompt-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(27, 75, 115, 0.1), 0 10px 10px -5px rgba(27, 75, 115, 0.04);
+}
+
+/* Search wave icon animation */
+@keyframes wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+.wave-icon {
+  animation: wave 2s ease-in-out infinite;
+}
+
+/* Droplet usage indicators */
+.usage-droplet {
+  background: linear-gradient(135deg, var(--aqua-current), var(--deep-sea));
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 1px;
+}
+
+/* Shimmer effect for popular prompts */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(186, 212, 227, 0.2),
+    transparent
+  );
+  background-size: 200px 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Utility classes */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .wave-header {
+    padding: 1rem;
+  }
+  
+  .wave-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .prompt-card {
+    margin-bottom: 1rem;
+  }
+  
+  .fixed.bottom-6.right-6 {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
