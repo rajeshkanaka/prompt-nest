@@ -19,34 +19,34 @@
   /* Ocean-inspired color palette */
   --background: oklch(0.965 0.003 0); /* Faint Gray */
   --foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
-  
+
   --card: oklch(0.986 0.003 258.27); /* Pearl White */
   --card-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
-  
+
   --popover: oklch(0.986 0.003 258.27); /* Pearl White */
   --popover-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
-  
+
   --primary: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
   --primary-foreground: oklch(0.986 0.003 258.27); /* Pearl White */
-  
+
   --secondary: oklch(0.821 0.048 258.27); /* Seafoam */
   --secondary-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
-  
+
   --muted: oklch(0.951 0.020 258.27); /* Ocean Mist */
   --muted-foreground: oklch(0.621 0.096 258.27); /* Aqua Current */
-  
+
   --accent: oklch(0.821 0.048 258.27); /* Seafoam */
   --accent-foreground: oklch(0.295 0.132 258.27); /* Deep Sea Blue */
-  
+
   --destructive: oklch(0.704 0.191 22.216); /* Muted Coral */
   --destructive-foreground: oklch(0.986 0.003 258.27); /* Pearl White */
-  
+
   --border: oklch(0.821 0.048 258.27); /* Seafoam */
   --input: oklch(0.821 0.048 258.27); /* Seafoam */
   --ring: oklch(0.621 0.096 258.27); /* Aqua Current */
-  
+
   --radius: 1rem; /* Smooth sea stone corners */
-  
+
   /* Custom ocean colors */
   --ocean-mist: oklch(0.951 0.020 258.27);
   --deep-sea: oklch(0.295 0.132 258.27);
@@ -54,6 +54,45 @@
   --seafoam: oklch(0.821 0.048 258.27);
   --pearl-white: oklch(0.986 0.003 258.27);
   --silver: oklch(0.758 0.016 258.27);
+}
+
+/* Dark Mode Theme */
+.dark {
+  --background: oklch(0.15 0.020 258.27); /* Dark Ocean */
+  --foreground: oklch(0.90 0.015 258.27); /* Light Pearl */
+
+  --card: oklch(0.20 0.025 258.27); /* Deep Water Card */
+  --card-foreground: oklch(0.90 0.015 258.27); /* Light Pearl */
+
+  --popover: oklch(0.18 0.025 258.27); /* Darker Popover */
+  --popover-foreground: oklch(0.90 0.015 258.27); /* Light Pearl */
+
+  --primary: oklch(0.621 0.096 258.27); /* Aqua Current (brighter for dark) */
+  --primary-foreground: oklch(0.10 0.020 258.27); /* Very Dark */
+
+  --secondary: oklch(0.35 0.060 258.27); /* Darker Seafoam */
+  --secondary-foreground: oklch(0.90 0.015 258.27); /* Light Pearl */
+
+  --muted: oklch(0.25 0.030 258.27); /* Dark Mist */
+  --muted-foreground: oklch(0.65 0.070 258.27); /* Muted Aqua */
+
+  --accent: oklch(0.45 0.080 258.27); /* Accent Seafoam */
+  --accent-foreground: oklch(0.95 0.010 258.27); /* Very Light */
+
+  --destructive: oklch(0.55 0.191 22.216); /* Brighter Coral for dark */
+  --destructive-foreground: oklch(0.95 0.010 258.27); /* Very Light */
+
+  --border: oklch(0.30 0.040 258.27); /* Dark Border */
+  --input: oklch(0.30 0.040 258.27); /* Dark Input */
+  --ring: oklch(0.621 0.096 258.27); /* Aqua Current */
+
+  /* Custom ocean colors for dark mode */
+  --ocean-mist: oklch(0.25 0.030 258.27);
+  --deep-sea: oklch(0.621 0.096 258.27);
+  --aqua-current: oklch(0.70 0.110 258.27);
+  --seafoam: oklch(0.50 0.070 258.27);
+  --pearl-white: oklch(0.90 0.015 258.27);
+  --silver: oklch(0.40 0.035 258.27);
 }
 
 @theme {
