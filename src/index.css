@@ -7,7 +7,7 @@
   }
   
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   }
   
   .nestley-font {
@@ -54,6 +54,9 @@
   --seafoam: oklch(0.821 0.048 258.27);
   --pearl-white: oklch(0.986 0.003 258.27);
   --silver: oklch(0.758 0.016 258.27);
+  --font-sans: IBM Plex Sans;
+  --font-serif: Noto Serif;
+  --font-mono: "IBM Plex Mono";
 }
 
 /* Dark Mode Theme */

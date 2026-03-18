@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Pencil, X, Search, Sparkles, Copy, Tag, Filter, Check, Star, Download, Upload, Moon, Sun } from '@phosphor-icons/react'
+import { Plus, Pencil, X, MagnifyingGlass, Sparkle, Copy, Tag, Funnel, Check, Star, Download, Upload, Moon, Sun } from '@phosphor-icons/react'
 import { toast, Toaster } from 'sonner'
 import nestLogo from '@/assets/images/nest-logo.svg'
 
@@ -61,16 +61,12 @@ function App() {
   const [newTag, setNewTag] = useState('')
   const [editingTags, setEditingTags] = useState<string[]>([])
   const [editingNewTag, setEditingNewTag] = useState('')
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode')
-    return saved ? JSON.parse(saved) : false
-  })
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [sortBy, setSortBy] = useState<'usage' | 'recent' | 'alphabetical' | 'favorites'>('usage')
+  const [darkMode, setDarkMode] = useState(false)
 
   // Dark mode effect
   React.useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode))
     if (darkMode) {
       document.documentElement.classList.add('dark')
     } else {
@@ -80,6 +76,8 @@ function App() {
 
   // Migrate existing prompts to include category and tags
   React.useEffect(() => {
+    if (!prompts) return
+    
     const migratedPrompts = prompts.map(prompt => ({
       ...prompt,
       category: prompt.category || 'Other',
@@ -97,10 +95,10 @@ function App() {
   // Get all unique tags from existing prompts
   const allTags = Array.from(new Set([
     ...COMMON_TAGS,
-    ...prompts.flatMap(p => p.tags || [])
+    ...(prompts || []).flatMap(p => p.tags || [])
   ])).sort()
 
-  const filteredPrompts = prompts
+  const filteredPrompts = (prompts || [])
     .filter(prompt => {
       const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            prompt.content.toLowerCase().includes(searchQuery.toLowerCase())
@@ -141,7 +139,7 @@ function App() {
       version: 1
     }
 
-    setPrompts(current => [...current, prompt])
+    setPrompts(current => [...(current || []), prompt])
     setNewPrompt({ title: '', content: '', category: 'Other', tags: [] })
     setIsAddModalOpen(false)
     toast.success('Prompt added successfully')
@@ -154,7 +152,7 @@ function App() {
     }
 
     setPrompts(current =>
-      current.map(p => p.id === editingPrompt.id ? {
+      (current || []).map(p => p.id === editingPrompt.id ? {
         ...editingPrompt,
         tags: editingTags,
         updatedAt: Date.now(),
@@ -167,7 +165,7 @@ function App() {
   }
 
   const deletePrompt = (id: string) => {
-    setPrompts(current => current.filter(p => p.id !== id))
+    setPrompts(current => (current || []).filter(p => p.id !== id))
     setEditingPrompt(null)
     setEditingTags([])
     toast.success('Prompt deleted')
@@ -175,7 +173,7 @@ function App() {
 
   const incrementUsage = (id: string) => {
     setPrompts(current => 
-      current.map(p => p.id === id ? { ...p, usage: p.usage + 1 } : p)
+      (current || []).map(p => p.id === id ? { ...p, usage: p.usage + 1 } : p)
     )
   }
 
@@ -210,10 +208,8 @@ function App() {
       addTag(tagValue.trim(), isEditing)
       if (isEditing) {
         setEditingNewTag('')
-        setIsEditTagPopoverOpen(false)
       } else {
         setNewTag('')
-        setIsTagPopoverOpen(false)
       }
     }
   }
@@ -234,14 +230,14 @@ function App() {
 
   const toggleFavorite = (id: string) => {
     setPrompts(current =>
-      current.map(p => p.id === id ? { ...p, isFavorite: !p.isFavorite } : p)
+      (current || []).map(p => p.id === id ? { ...p, isFavorite: !p.isFavorite } : p)
     )
-    const prompt = prompts.find(p => p.id === id)
+    const prompt = (prompts || []).find(p => p.id === id)
     toast.success(prompt?.isFavorite ? 'Removed from favorites' : 'Added to favorites')
   }
 
   const exportToJSON = () => {
-    const dataStr = JSON.stringify(prompts, null, 2)
+    const dataStr = JSON.stringify(prompts || [], null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
@@ -256,7 +252,7 @@ function App() {
 
   const exportToCSV = () => {
     const headers = ['Title', 'Category', 'Tags', 'Content', 'Usage', 'Favorite', 'Created', 'Updated']
-    const rows = prompts.map(p => [
+    const rows = (prompts || []).map(p => [
       `"${p.title.replace(/"/g, '""')}"`,
       `"${p.category}"`,
       `"${(p.tags || []).join(', ')}"`,
@@ -304,7 +300,7 @@ function App() {
           tags: p.tags || []
         }))
 
-        setPrompts(current => [...current, ...validImported])
+        setPrompts(current => [...(current || []), ...validImported])
         toast.success(`Imported ${validImported.length} prompts successfully`)
       } catch {
         toast.error('Failed to import prompts. Invalid JSON file.')
@@ -541,7 +537,7 @@ function App() {
               variant="outline"
               className="bg-pearl-white/90 text-deep-sea border-silver hover:bg-pearl-white hover:scale-105 transition-all duration-300"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkle className="w-4 h-4 mr-2" />
               Enhance Prompts
             </Button>
           </div>
@@ -553,7 +549,7 @@ function App() {
         <div className="space-y-4 mb-8">
           {/* Search bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-aqua-current w-5 h-5 wave-icon" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-aqua-current w-5 h-5 wave-icon" />
             <Input
               placeholder="Search your prompts..."
               value={searchQuery}
@@ -566,7 +562,7 @@ function App() {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-aqua-current" />
+                <Funnel className="w-4 h-4 text-aqua-current" />
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-48 border-seafoam focus:border-aqua-current">
                     <SelectValue placeholder="All Categories" />
