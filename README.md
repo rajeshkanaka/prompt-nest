@@ -25,6 +25,12 @@
 
 ## ✨ Highlights
 
+- **Import/Export**: JSON and CSV export for data portability, JSON import with validation
+- **Dark Mode**: Beautiful dark theme with system preference detection and manual toggle (Cmd/Ctrl+D)
+- **Favorites System**: Star your most-used prompts for quick access
+- **Keyboard Shortcuts**: Power-user shortcuts (Cmd+K search, Cmd+N new, Cmd+E export, Cmd+D dark mode)
+- **Smart Sorting**: Sort by usage, recently updated, alphabetical, or favorites first
+- **Version Tracking**: Automatic version history with update timestamps
 - Lightning-fast search with category and tag filters
 - Add, edit, delete prompts with a delightful modal experience
 - Copy-to-clipboard with one click and usage stats tracking
@@ -74,12 +80,38 @@ npm run build && npm run preview
 
 ## 🧩 Features, In Detail
 
-- Smart filtering: full-text search + category + tag intersection
-- Elegant cards: glanceable titles, usage droplets, and compact tags
-- One-click copy: tap any card to copy instantly (with toast feedback)
-- Usage heat: popular prompts shimmer to surface your frequent go-tos
-- Guided creation: accessible dialogs, keyboard-friendly inputs, tag command menu
-- Thoughtful theming: ocean palette, smooth hover, gentle motion, readable typography
+### Core Features
+- **Smart filtering**: full-text search + category + tag intersection + favorites filter
+- **Flexible sorting**: Sort by usage, recently updated, alphabetical, or favorites first
+- **Elegant cards**: glanceable titles, usage droplets, compact tags, and favorite stars
+- **One-click copy**: tap any card to copy instantly (with toast feedback)
+- **Usage heat**: popular prompts shimmer to surface your frequent go-tos
+- **Guided creation**: accessible dialogs, keyboard-friendly inputs, tag command menu
+- **Thoughtful theming**: ocean palette (light & dark modes), smooth hover, gentle motion, readable typography
+
+### Modern Enhancements (2026)
+- **Import/Export**:
+  - Export your prompts as JSON (structured, readable) or CSV (spreadsheet-friendly)
+  - Import JSON files with validation and conflict handling
+  - Backup and restore your entire prompt library
+- **Dark Mode**:
+  - Automatic system preference detection
+  - Manual toggle with keyboard shortcut (Cmd/Ctrl+D)
+  - Ocean-themed dark palette with proper contrast
+- **Favorites System**:
+  - Star prompts for quick access
+  - Filter to show only favorites
+  - Favorites-first sorting option
+- **Keyboard Shortcuts**:
+  - `Cmd/Ctrl+K`: Focus search bar
+  - `Cmd/Ctrl+N`: Create new prompt
+  - `Cmd/Ctrl+E`: Export prompts as JSON
+  - `Cmd/Ctrl+D`: Toggle dark mode
+  - `Esc`: Close open dialogs
+- **Version Tracking**:
+  - Automatic version incrementing on edits
+  - Update timestamps for all prompts
+  - Track creation and last modified dates
 
 ---
 
@@ -94,8 +126,11 @@ interface Prompt {
   content: string
   usage: number
   createdAt: number
+  updatedAt?: number        // NEW: Track last modification
   category: string
   tags: string[]
+  isFavorite?: boolean      // NEW: Star/favorite system
+  version?: number          // NEW: Version tracking for edits
 }
 ```
 
@@ -183,7 +218,19 @@ Tweak colors in `src/index.css` and tokens in `src/styles/theme.css`.
 - `npm run dev`: start development server
 - `npm run build`: type-check and build for production
 - `npm run preview`: preview the production build locally
-- `npm run lint`: lint the project
+- `npm run lint`: lint the project with ESLint
+
+## ⌨️ Keyboard Shortcuts
+
+Power up your workflow with these shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + K` | Focus search bar |
+| `Cmd/Ctrl + N` | Create new prompt |
+| `Cmd/Ctrl + E` | Export prompts as JSON |
+| `Cmd/Ctrl + D` | Toggle dark/light mode |
+| `Esc` | Close open dialogs |
 
 ---
 
@@ -202,12 +249,30 @@ Contributions are warmly welcomed!
 3) Add context in PR description with before/after rationale
 4) Be kind, constructive, and detail-oriented
 
+## 🎯 What's New in 2026
+
+This version includes major modernization updates:
+
+✅ **Data Portability**: Full import/export support (JSON/CSV)
+✅ **Dark Mode**: Beautiful dark theme with keyboard shortcut
+✅ **Favorites**: Star system for quick access to best prompts
+✅ **Keyboard Shortcuts**: Power-user productivity features
+✅ **Smart Sorting**: Multiple sorting options (usage, recent, A-Z, favorites)
+✅ **Version Tracking**: Automatic versioning and update timestamps
+✅ **ESLint Config**: Modern ESLint 9 flat config with TypeScript support
+
+## 🚀 Roadmap: Future Enhancements
+
 Ideas that would be amazing to add:
 
-- Import/export (JSON, CSV), cloud sync
-- Prompt sharing, templates, pinned favorites
-- AI-powered “Enhance Prompts” workflow
-- Keyboard shortcuts and power actions
+- **AI Integration**: Prompt testing with Claude/GPT, AI-powered prompt optimization
+- **Templates**: Variable substitution ({{user_name}}, {{date}}) for reusable templates
+- **Cloud Sync**: Optional cross-device sync via Supabase/Firebase
+- **Sharing**: Public/private sharing links, community prompt library
+- **Advanced Search**: Fuzzy search, regex support, saved searches
+- **PWA**: Progressive Web App with offline support and installability
+- **Accessibility**: Enhanced ARIA labels, high-contrast mode, keyboard navigation
+- **Analytics**: Usage trends, category insights, performance metrics
 
 ---
 

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Pencil, X, Search, Sparkles, Copy, Tag, Filter, Check } from '@phosphor-icons/react'
+import { Plus, Pencil, X, Search, Sparkles, Copy, Tag, Filter, Check, Star, Download, Upload, Moon, Sun } from '@phosphor-icons/react'
 import { toast, Toaster } from 'sonner'
 import nestLogo from '@/assets/images/nest-logo.svg'
 
@@ -21,8 +21,11 @@ interface Prompt {
   content: string
   usage: number
   createdAt: number
+  updatedAt?: number
   category: string
   tags: string[]
+  isFavorite?: boolean
+  version?: number
 }
 
 const CATEGORIES = [
@@ -49,26 +52,43 @@ function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null)
-  const [newPrompt, setNewPrompt] = useState({ 
-    title: '', 
-    content: '', 
+  const [newPrompt, setNewPrompt] = useState({
+    title: '',
+    content: '',
     category: 'Other' as string,
     tags: [] as string[]
   })
   const [newTag, setNewTag] = useState('')
   const [editingTags, setEditingTags] = useState<string[]>([])
   const [editingNewTag, setEditingNewTag] = useState('')
-  const [isTagPopoverOpen, setIsTagPopoverOpen] = useState(false)
-  const [isEditTagPopoverOpen, setIsEditTagPopoverOpen] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode')
+    return saved ? JSON.parse(saved) : false
+  })
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [sortBy, setSortBy] = useState<'usage' | 'recent' | 'alphabetical' | 'favorites'>('usage')
+
+  // Dark mode effect
+  React.useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode))
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
 
   // Migrate existing prompts to include category and tags
   React.useEffect(() => {
     const migratedPrompts = prompts.map(prompt => ({
       ...prompt,
       category: prompt.category || 'Other',
-      tags: prompt.tags || []
+      tags: prompt.tags || [],
+      isFavorite: prompt.isFavorite || false,
+      updatedAt: prompt.updatedAt || prompt.createdAt,
+      version: prompt.version || 1
     }))
-    
+
     if (JSON.stringify(prompts) !== JSON.stringify(migratedPrompts)) {
       setPrompts(migratedPrompts)
     }
@@ -85,11 +105,22 @@ function App() {
       const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            prompt.content.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === 'all' || prompt.category === selectedCategory
-      const matchesTags = selectedTags.length === 0 || 
+      const matchesTags = selectedTags.length === 0 ||
                          selectedTags.every(tag => (prompt.tags || []).includes(tag))
-      return matchesSearch && matchesCategory && matchesTags
+      const matchesFavorites = !showFavoritesOnly || prompt.isFavorite
+      return matchesSearch && matchesCategory && matchesTags && matchesFavorites
     })
-    .sort((a, b) => b.usage - a.usage)
+    .sort((a, b) => {
+      if (sortBy === 'usage') return b.usage - a.usage
+      if (sortBy === 'recent') return (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt)
+      if (sortBy === 'alphabetical') return a.title.localeCompare(b.title)
+      if (sortBy === 'favorites') {
+        if (a.isFavorite && !b.isFavorite) return -1
+        if (!a.isFavorite && b.isFavorite) return 1
+        return b.usage - a.usage
+      }
+      return 0
+    })
 
   const addPrompt = () => {
     if (!newPrompt.title.trim() || !newPrompt.content.trim()) {
@@ -104,7 +135,10 @@ function App() {
       category: newPrompt.category,
       tags: newPrompt.tags,
       usage: 0,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      isFavorite: false,
+      version: 1
     }
 
     setPrompts(current => [...current, prompt])
@@ -119,10 +153,12 @@ function App() {
       return
     }
 
-    setPrompts(current => 
+    setPrompts(current =>
       current.map(p => p.id === editingPrompt.id ? {
         ...editingPrompt,
-        tags: editingTags
+        tags: editingTags,
+        updatedAt: Date.now(),
+        version: (p.version || 1) + 1
       } : p)
     )
     setEditingPrompt(null)
@@ -195,6 +231,123 @@ function App() {
     setSelectedTags([])
     setSearchQuery('')
   }
+
+  const toggleFavorite = (id: string) => {
+    setPrompts(current =>
+      current.map(p => p.id === id ? { ...p, isFavorite: !p.isFavorite } : p)
+    )
+    const prompt = prompts.find(p => p.id === id)
+    toast.success(prompt?.isFavorite ? 'Removed from favorites' : 'Added to favorites')
+  }
+
+  const exportToJSON = () => {
+    const dataStr = JSON.stringify(prompts, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `prompt-nest-export-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Prompts exported successfully')
+  }
+
+  const exportToCSV = () => {
+    const headers = ['Title', 'Category', 'Tags', 'Content', 'Usage', 'Favorite', 'Created', 'Updated']
+    const rows = prompts.map(p => [
+      `"${p.title.replace(/"/g, '""')}"`,
+      `"${p.category}"`,
+      `"${(p.tags || []).join(', ')}"`,
+      `"${p.content.replace(/"/g, '""')}"`,
+      p.usage,
+      p.isFavorite ? 'Yes' : 'No',
+      new Date(p.createdAt).toLocaleDateString(),
+      p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : 'N/A'
+    ])
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const dataBlob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `prompt-nest-export-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Prompts exported to CSV successfully')
+  }
+
+  const importFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string) as Prompt[]
+        if (!Array.isArray(imported)) {
+          toast.error('Invalid JSON format')
+          return
+        }
+
+        // Validate and merge with existing prompts
+        const validImported = imported.filter(p =>
+          p.title && p.content && p.category
+        ).map(p => ({
+          ...p,
+          id: p.id || Date.now().toString() + Math.random(),
+          isFavorite: p.isFavorite || false,
+          updatedAt: p.updatedAt || p.createdAt,
+          version: p.version || 1,
+          tags: p.tags || []
+        }))
+
+        setPrompts(current => [...current, ...validImported])
+        toast.success(`Imported ${validImported.length} prompts successfully`)
+      } catch {
+        toast.error('Failed to import prompts. Invalid JSON file.')
+      }
+    }
+    reader.readAsText(file)
+    event.target.value = '' // Reset input
+  }
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K: Focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        document.querySelector<HTMLInputElement>('input[placeholder*="Search"]')?.focus()
+      }
+      // Cmd/Ctrl + N: New prompt
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault()
+        setIsAddModalOpen(true)
+      }
+      // Cmd/Ctrl + E: Export JSON
+      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+        e.preventDefault()
+        exportToJSON()
+      }
+      // Cmd/Ctrl + D: Toggle dark mode
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+        e.preventDefault()
+        setDarkMode(prev => !prev)
+      }
+      // Escape: Close modals
+      if (e.key === 'Escape') {
+        setIsAddModalOpen(false)
+        setEditingPrompt(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyboard)
+    return () => window.removeEventListener('keydown', handleKeyboard)
+  }, [])
+
 
   const UsageDroplets = ({ usage }: { usage: number }) => {
     const dropletCount = Math.min(Math.max(Math.ceil(usage / 2), 1), 5)
@@ -298,8 +451,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Toaster 
-        theme="light"
+      <Toaster
+        theme={darkMode ? 'dark' : 'light'}
         toastOptions={{
           style: {
             background: 'var(--card)',
@@ -315,14 +468,83 @@ function App() {
             <img src={nestLogo} alt="Prompt Nest Logo" className="w-10 h-8" />
             <h1 className="nestley-font text-2xl sm:text-3xl font-semibold text-pearl-white">Prompt Nest</h1>
           </div>
-          <Button 
-            onClick={enhancePrompts}
-            variant="outline" 
-            className="bg-pearl-white/90 text-deep-sea border-silver hover:bg-pearl-white hover:scale-105 transition-all duration-300"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Enhance Prompts
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Dark Mode Toggle */}
+            <Button
+              onClick={() => setDarkMode(!darkMode)}
+              variant="ghost"
+              size="icon"
+              className="text-pearl-white hover:bg-pearl-white/20"
+              title={`Toggle ${darkMode ? 'light' : 'dark'} mode (Cmd/Ctrl+D)`}
+            >
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+
+            {/* Import Button */}
+            <label htmlFor="import-json" className="cursor-pointer">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-pearl-white hover:bg-pearl-white/20"
+                title="Import prompts (JSON)"
+                asChild
+              >
+                <span>
+                  <Upload className="w-5 h-5" />
+                </span>
+              </Button>
+            </label>
+            <input
+              id="import-json"
+              type="file"
+              accept=".json"
+              onChange={importFromJSON}
+              className="hidden"
+            />
+
+            {/* Export Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-pearl-white hover:bg-pearl-white/20"
+                  title="Export prompts (Cmd/Ctrl+E)"
+                >
+                  <Download className="w-5 h-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 bg-card border-seafoam p-2" align="end">
+                <div className="flex flex-col gap-1">
+                  <Button
+                    variant="ghost"
+                    onClick={exportToJSON}
+                    className="justify-start"
+                  >
+                    Export as JSON
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={exportToCSV}
+                    className="justify-start"
+                  >
+                    Export as CSV
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Separator orientation="vertical" className="h-8 bg-pearl-white/30" />
+
+            <Button
+              onClick={enhancePrompts}
+              variant="outline"
+              className="bg-pearl-white/90 text-deep-sea border-silver hover:bg-pearl-white hover:scale-105 transition-all duration-300"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Enhance Prompts
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -341,66 +563,98 @@ function App() {
           </div>
 
           {/* Category and Tag Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-aqua-current" />
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48 border-seafoam focus:border-aqua-current">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-seafoam">
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {CATEGORIES.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Tag Filter */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
-              <Tag className="w-4 h-4 text-aqua-current" />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="border-seafoam hover:border-aqua-current">
-                    Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 bg-card border-seafoam" align="start">
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-foreground">Filter by Tags</h4>
-                    <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                      {allTags.map(tag => (
-                        <Badge
-                          key={tag}
-                          variant={selectedTags.includes(tag) ? "default" : "outline"}
-                          className={`cursor-pointer transition-colors ${
-                            selectedTags.includes(tag) 
-                              ? 'bg-deep-sea text-pearl-white hover:bg-deep-sea/90' 
-                              : 'border-seafoam hover:border-aqua-current'
-                          }`}
-                          onClick={() => toggleTagFilter(tag)}
-                        >
-                          {selectedTags.includes(tag) && <Check className="w-3 h-3 mr-1" />}
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-aqua-current" />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-48 border-seafoam focus:border-aqua-current">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-seafoam">
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {CATEGORIES.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {(selectedCategory !== 'all' || selectedTags.length > 0) && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearFilters}
+              {/* Tag Filter */}
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-aqua-current" />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="border-seafoam hover:border-aqua-current">
+                      Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 bg-card border-seafoam" align="start">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-foreground">Filter by Tags</h4>
+                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                        {allTags.map(tag => (
+                          <Badge
+                            key={tag}
+                            variant={selectedTags.includes(tag) ? "default" : "outline"}
+                            className={`cursor-pointer transition-colors ${
+                              selectedTags.includes(tag)
+                                ? 'bg-deep-sea text-pearl-white hover:bg-deep-sea/90'
+                                : 'border-seafoam hover:border-aqua-current'
+                            }`}
+                            onClick={() => toggleTagFilter(tag)}
+                          >
+                            {selectedTags.includes(tag) && <Check className="w-3 h-3 mr-1" />}
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Favorites Filter */}
+              <Button
+                variant={showFavoritesOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={showFavoritesOnly ? "bg-deep-sea text-pearl-white" : "border-seafoam"}
+              >
+                <Star className={`w-4 h-4 mr-1 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                Favorites
+              </Button>
+
+              {(selectedCategory !== 'all' || selectedTags.length > 0 || showFavoritesOnly) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    clearFilters()
+                    setShowFavoritesOnly(false)
+                  }}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4 mr-1" />
                   Clear
                 </Button>
               )}
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Sort by:</span>
+              <Select value={sortBy} onValueChange={(value: 'usage' | 'recent' | 'alphabetical' | 'favorites') => setSortBy(value)}>
+                <SelectTrigger className="w-40 border-seafoam focus:border-aqua-current">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-seafoam">
+                  <SelectItem value="usage">Most Used</SelectItem>
+                  <SelectItem value="recent">Recently Updated</SelectItem>
+                  <SelectItem value="alphabetical">A-Z</SelectItem>
+                  <SelectItem value="favorites">Favorites First</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -468,6 +722,18 @@ function App() {
                     </div>
                     <div className="flex items-center gap-2">
                       <UsageDroplets usage={prompt.usage} />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleFavorite(prompt.id)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-yellow-500 hover:text-yellow-600"
+                        title="Toggle favorite"
+                      >
+                        <Star className={`w-4 h-4 ${prompt.isFavorite ? 'fill-current' : ''}`} />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
