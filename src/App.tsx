@@ -451,8 +451,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Toaster 
-        theme="light"
+      <Toaster
+        theme={darkMode ? 'dark' : 'light'}
         toastOptions={{
           style: {
             background: 'var(--card)',
